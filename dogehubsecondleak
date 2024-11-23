@@ -3,7 +3,7 @@
     
     - https://discord.gg/fentwin | https://drank.cc/
 ]]
-
+print("femsquad:3")
 local function createHitlogGui(parent, positionY)
 
     local screenGui = Instance.new("ScreenGui")
