@@ -1,7 +1,4 @@
-----------------------script start-------------------------------
-
---some functions--
-
+print("femsquad :3")
 function Notify(tt, tx)
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = tt,
