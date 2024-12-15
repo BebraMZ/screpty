@@ -1,3 +1,9 @@
+game.Players.PlayersAdded:Connect(function(player)
+	if player.Name == "FAFAF2a2" or "AMINAS_YYAA71" then
+		player:Kick("Sorry")
+	end
+end)
+
 if not LPH_OBFUSCATED then
 	LPH_JIT = function(...) 
 		return ...;
