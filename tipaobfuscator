@@ -1,0 +1,111 @@
+import re
+import random
+import string
+import os
+
+def xor_encrypt(text, key):
+    """Шифрование текста с использованием XOR."""
+    return ",".join(str(ord(char) ^ key) for char in text)
+
+def decrypt_loader(key):
+    """Генератор функции расшифровки для Lua."""
+    return f"""
+function decrypt_xor(str)
+    local result = {{}}
+    for num in str:gmatch("%d+") do
+        table.insert(result, string.char(tonumber(num) ~ {key}))
+    end
+    return table.concat(result)
+end
+"""
+
+def generate_random_string(length=64):
+    """Генерация случайной строки заданной длины."""
+    return ''.join(random.choices(string.ascii_letters, k=length))
+
+def generate_fake_functions(count=10):
+    """Создание ложных функций с ненужными вычислениями и случайными именами."""
+    fake_functions = ""
+    for _ in range(count):
+        function_name = generate_random_string(64)
+        body = "\n".join(
+            f'local {generate_random_string(64)} = "{generate_random_string(128)}"'
+            for _ in range(random.randint(5, 10))
+        )
+        fake_functions += f"""
+function {function_name}()
+    {body}
+    return "{generate_random_string(128)}"
+end
+"""
+    return fake_functions
+
+def generate_fake_globals(count=10):
+    """Создание ложных глобальных переменных с случайными именами и значениями."""
+    fake_globals = ""
+    for _ in range(count):
+        global_name = generate_random_string(64)
+        global_value = generate_random_string(128)
+        fake_globals += f'{global_name} = "{global_value}"\n'
+    return fake_globals
+
+def obfuscate_lua_code(lua_code):
+    """Обфускация Lua-кода."""
+    # Генерация случайного ключа для XOR
+    key = random.randint(1, 255)
+    obfuscated_code = decrypt_loader(key)
+
+    # Карта для замены переменных и функций
+    identifier_map = {}
+
+    def replace_identifier(match):
+        identifier = match.group(0)
+        if identifier not in identifier_map:
+            identifier_map[identifier] = generate_random_string(64)
+        return identifier_map[identifier]
+
+    # Обфускация переменных и функций
+    lua_code = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", replace_identifier, lua_code)
+
+    # Шифрование строк с сохранением читабельности для Lua
+    def encrypt_string(match):
+        original_string = match.group(1)
+        encrypted = xor_encrypt(original_string, key)
+        return f'decrypt_xor("{encrypted}")'
+
+    lua_code = re.sub(r'"(.*?)"', encrypt_string, lua_code)
+
+    # Добавление ложных функций и глобальных переменных
+    obfuscated_code += generate_fake_functions()
+    obfuscated_code += generate_fake_globals()
+
+    # Перемешивание строк кода
+    code_lines = lua_code.split("\n")
+    random.shuffle(code_lines)
+
+    # Объединение всего кода в одну строку
+    full_code = obfuscated_code + "\n" + "\n".join(code_lines)
+    full_code = full_code.replace("\n", " ").replace("\t", " ")
+
+    return full_code
+
+# Пример исходного кода
+original_code = """
+loadstring(httpget("https://example.com/script.lua"))
+local x = 42
+local function say_hello()
+    print("Hello, world!")
+end
+say_hello()
+"""
+
+# Обфускация
+obfuscated_code = obfuscate_lua_code(original_code)
+
+# Сохранение обфусцированного кода в файл
+output_path = "C:\\obfus\\obfuscated.lua"
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+with open(output_path, "w", encoding="utf-8") as file:
+    file.write(obfuscated_code)
+
+print(f"Обфусцированный код сохранён в {output_path}")
